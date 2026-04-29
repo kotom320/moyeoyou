@@ -35,6 +35,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
   const [allProfiles, setAllProfiles] = useState<Profile[]>([])
   const [availability, setAvailability] = useState<Availability[]>([])
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
 
   useEffect(() => {
@@ -45,6 +46,17 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
     }
     setCurrentProfile(JSON.parse(saved))
   }, [appointmentId, router])
+
+  useEffect(() => {
+    if (selectedDate) {
+      requestAnimationFrame(() => setSheetOpen(true))
+    }
+  }, [selectedDate])
+
+  function closeSheet() {
+    setSheetOpen(false)
+    setTimeout(() => setSelectedDate(null), 300)
+  }
 
   useEffect(() => {
     if (!currentProfile) return
@@ -428,14 +440,14 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
       {/* Backdrop */}
       {selectedDate && (
         <div
-          className="fixed inset-0 bg-black/20 z-10"
-          onClick={() => setSelectedDate(null)}
+          className={`fixed inset-0 bg-black/30 z-10 transition-opacity duration-300 ${sheetOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={closeSheet}
         />
       )}
 
       {/* Time grid bottom sheet */}
       {selectedDate && (
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white rounded-t-3xl shadow-xl z-20 flex flex-col max-h-[80vh]">
+        <div className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white rounded-t-3xl shadow-xl z-20 flex flex-col max-h-[80vh] transition-transform duration-300 ease-out ${sheetOpen ? 'translate-y-0' : 'translate-y-full'}`}>
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
             <div>
@@ -448,7 +460,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
               )}
             </div>
             <button
-              onClick={() => setSelectedDate(null)}
+              onClick={closeSheet}
               className="text-gray-300 hover:text-gray-500 p-1"
             >
               <X size={20} />
