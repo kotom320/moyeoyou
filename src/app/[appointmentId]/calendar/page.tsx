@@ -63,6 +63,8 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
         { event: '*', schema: 'public', table: 'availability', filter: `appointment_id=eq.${appointmentId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
+            // 내 INSERT는 toggleDate에서 직접 관리하므로 무시
+            if (currentProfile && payload.new.profile_id === currentProfile.id) return
             setAvailability((prev) => {
               const filtered = prev.filter(
                 (a) => !(a.profile_id === payload.new.profile_id && a.date === payload.new.date)
@@ -88,21 +90,36 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
 
     if (existing) {
       setAvailability((prev) => prev.filter((a) => a.id !== existing.id))
-      await supabase.from('availability').delete().eq('id', existing.id)
+      // temp ID면 INSERT가 아직 진행 중 — INSERT 응답 콜백에서 DELETE 처리됨
+      if (!existing.id.startsWith('temp-')) {
+        await supabase.from('availability').delete().eq('id', existing.id)
+      }
     } else {
+      const tempId = `temp-${currentProfile.id}-${dateStr}`
       const optimistic = {
-        id: `temp-${currentProfile.id}-${dateStr}`,
+        id: tempId,
         appointment_id: appointmentId,
         profile_id: currentProfile.id,
         date: dateStr,
         created_at: new Date().toISOString(),
       }
       setAvailability((prev) => [...prev, optimistic])
-      await supabase.from('availability').insert({
+      const { data } = await supabase.from('availability').insert({
         appointment_id: appointmentId,
         profile_id: currentProfile.id,
         date: dateStr,
-      })
+      }).select().single()
+      if (data) {
+        setAvailability((prev) => {
+          const tempStillExists = prev.some((a) => a.id === tempId)
+          if (!tempStillExists) {
+            // INSERT 도중 사용자가 취소 → 실제 DB row 삭제
+            supabase.from('availability').delete().eq('id', data.id)
+            return prev
+          }
+          return prev.map((a) => a.id === tempId ? data : a)
+        })
+      }
     }
   }
 
