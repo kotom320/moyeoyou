@@ -236,7 +236,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
 
             return (
               <button
-                key={day}
+                key={dateStr}
                 onClick={() => setSelectedDate(dateStr)}
                 className={`
                   aspect-square flex flex-col items-center justify-center rounded-xl mx-0.5
