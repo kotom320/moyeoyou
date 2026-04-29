@@ -63,7 +63,12 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
         { event: '*', schema: 'public', table: 'availability', filter: `appointment_id=eq.${appointmentId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setAvailability((prev) => [...prev, payload.new as Availability])
+            setAvailability((prev) => {
+              const filtered = prev.filter(
+                (a) => !(a.profile_id === payload.new.profile_id && a.date === payload.new.date)
+              )
+              return [...filtered, payload.new as Availability]
+            })
           } else if (payload.eventType === 'DELETE') {
             setAvailability((prev) => prev.filter((a) => a.id !== payload.old.id))
           }
@@ -85,6 +90,14 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
       setAvailability((prev) => prev.filter((a) => a.id !== existing.id))
       await supabase.from('availability').delete().eq('id', existing.id)
     } else {
+      const optimistic = {
+        id: `temp-${currentProfile.id}-${dateStr}`,
+        appointment_id: appointmentId,
+        profile_id: currentProfile.id,
+        date: dateStr,
+        created_at: new Date().toISOString(),
+      }
+      setAvailability((prev) => [...prev, optimistic])
       await supabase.from('availability').insert({
         appointment_id: appointmentId,
         profile_id: currentProfile.id,
