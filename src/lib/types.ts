@@ -25,6 +25,8 @@ export type Appointment = {
   title: string
   created_at: string
   confirmed_date: string | null
+  confirmed_start_hour: number | null
+  confirmed_end_hour: number | null
 }
 
 export type Profile = {
@@ -40,6 +42,7 @@ export type Availability = {
   appointment_id: string
   profile_id: string
   date: string
+  hour: number
   created_at: string
 }
 

@@ -3,6 +3,8 @@ create table appointments (
   id uuid default gen_random_uuid() primary key,
   title text not null,
   confirmed_date date,
+  confirmed_start_hour integer,
+  confirmed_end_hour integer,
   created_at timestamptz default now()
 );
 
@@ -15,14 +17,15 @@ create table profiles (
   created_at timestamptz default now()
 );
 
--- 가능한 날짜 테이블
+-- 가능한 날짜/시간 테이블
 create table availability (
   id uuid default gen_random_uuid() primary key,
   appointment_id uuid references appointments(id) on delete cascade not null,
   profile_id uuid references profiles(id) on delete cascade not null,
   date date not null,
+  hour integer not null,
   created_at timestamptz default now(),
-  unique(profile_id, date)
+  unique(appointment_id, profile_id, date, hour)
 );
 
 -- RLS 활성화
@@ -44,3 +47,21 @@ create policy "appointments_update" on appointments for update using (true);
 
 -- Realtime 활성화
 alter publication supabase_realtime add table availability;
+
+-- =============================================
+-- Migration: 시간 선택 기능 추가 (Supabase SQL editor에서 실행)
+-- =============================================
+-- 1. 기존 테스트 데이터 초기화
+-- truncate table availability;
+
+-- 2. availability에 hour 컬럼 추가
+-- alter table availability add column hour integer not null default 0;
+-- alter table availability alter column hour drop default;
+
+-- 3. unique constraint 업데이트
+-- alter table availability drop constraint if exists availability_profile_id_date_key;
+-- alter table availability add constraint availability_profile_date_hour_key unique(appointment_id, profile_id, date, hour);
+
+-- 4. appointments에 확정 시간 컬럼 추가
+-- alter table appointments add column confirmed_start_hour integer;
+-- alter table appointments add column confirmed_end_hour integer;
