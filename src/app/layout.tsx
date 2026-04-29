@@ -4,6 +4,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "모여유",
   description: "친구들과 일정을 맞춰봐요",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

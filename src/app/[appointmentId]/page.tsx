@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Appointment, Profile } from '@/lib/types'
 import { AVATAR_COLORS } from '@/lib/types'
+import { ArrowLeft, CheckCircle2, UserPlus, Link2, Loader2, X } from 'lucide-react'
 
 export default function AppointmentPage({ params }: { params: Promise<{ appointmentId: string }> }) {
   const { appointmentId } = use(params)
@@ -85,15 +86,19 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
     <main className="flex flex-col min-h-screen px-5 pt-12 pb-8 max-w-md mx-auto w-full">
       <button
         onClick={() => router.push('/')}
-        className="text-gray-400 text-sm mb-8 self-start"
+        className="flex items-center gap-1.5 text-gray-400 text-sm mb-8 self-start hover:text-gray-600 transition-colors"
       >
-        ← 홈으로
+        <ArrowLeft size={16} />
+        홈으로
       </button>
 
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold text-gray-700 mb-1">{appointment.title}</h1>
         {appointment.confirmed_date ? (
-          <p className="text-pink-400 font-medium">✅ {appointment.confirmed_date} 확정!</p>
+          <span className="inline-flex items-center gap-1.5 text-pink-400 font-medium">
+            <CheckCircle2 size={16} />
+            {appointment.confirmed_date} 확정!
+          </span>
         ) : (
           <p className="text-gray-400 text-sm">누구로 입장할까요?</p>
         )}
@@ -124,9 +129,10 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
       {!showCreate ? (
         <button
           onClick={() => setShowCreate(true)}
-          className="w-full border-2 border-dashed border-pink-200 rounded-2xl py-5 text-pink-300 text-sm hover:border-pink-300 hover:text-pink-400 transition-colors"
+          className="w-full border-2 border-dashed border-pink-200 rounded-2xl py-5 text-pink-300 text-sm hover:border-pink-300 hover:text-pink-400 transition-colors flex items-center justify-center gap-2"
         >
-          + 새 프로필 만들기
+          <UserPlus size={16} />
+          새 프로필 만들기
         </button>
       ) : (
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-pink-100">
@@ -159,15 +165,17 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
           <div className="flex gap-2">
             <button
               onClick={() => setShowCreate(false)}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-sm text-gray-500"
+              className="flex-1 py-3 rounded-xl border border-gray-200 text-sm text-gray-500 flex items-center justify-center gap-1.5"
             >
+              <X size={14} />
               취소
             </button>
             <button
               onClick={createProfile}
               disabled={creating || !newName.trim()}
-              className="flex-1 py-3 rounded-xl bg-pink-400 text-white text-sm font-medium disabled:bg-gray-200 transition-colors"
+              className="flex-1 py-3 rounded-xl bg-pink-400 text-white text-sm font-medium disabled:bg-gray-200 transition-colors flex items-center justify-center gap-1.5"
             >
+              {creating ? <Loader2 size={14} className="animate-spin" /> : null}
               {creating ? '만드는 중...' : '입장하기'}
             </button>
           </div>
@@ -177,9 +185,10 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
       <div className="mt-auto pt-8">
         <button
           onClick={shareLink}
-          className="w-full py-3 rounded-xl border border-pink-200 text-pink-400 text-sm font-medium"
+          className="w-full py-3 rounded-xl border border-pink-200 text-pink-400 text-sm font-medium flex items-center justify-center gap-2"
         >
-          링크 공유하기 🔗
+          <Link2 size={15} />
+          링크 공유하기
         </button>
       </div>
     </main>

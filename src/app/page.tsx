@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Appointment } from '@/lib/types'
+import { Plus, CalendarDays, CheckCircle2, Clock, X, Loader2 } from 'lucide-react'
 
 export default function Home() {
   const router = useRouter()
@@ -48,8 +49,11 @@ export default function Home() {
   return (
     <main className="flex flex-col min-h-screen px-5 pt-12 pb-8 max-w-md mx-auto w-full">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-pink-400 mb-1">모여유</h1>
-        <p className="text-sm text-gray-400">친구들과 일정을 맞춰봐요 🌸</p>
+        <div className="flex items-center gap-2 mb-1">
+          <CalendarDays className="text-pink-400" size={28} strokeWidth={2} />
+          <h1 className="text-4xl font-bold text-pink-400">모여유</h1>
+        </div>
+        <p className="text-sm text-gray-400">친구들과 일정을 맞춰봐요</p>
       </div>
 
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-pink-100 mb-8">
@@ -65,9 +69,19 @@ export default function Home() {
         <button
           onClick={createAppointment}
           disabled={creating || !title.trim()}
-          className="w-full bg-pink-400 hover:bg-pink-500 disabled:bg-gray-200 text-white rounded-xl py-3 text-sm font-medium transition-colors"
+          className="w-full bg-pink-400 hover:bg-pink-500 disabled:bg-gray-200 text-white rounded-xl py-3 text-sm font-medium transition-colors flex items-center justify-center gap-2"
         >
-          {creating ? '만드는 중...' : '약속 만들기 🎉'}
+          {creating ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              만드는 중...
+            </>
+          ) : (
+            <>
+              <Plus size={16} strokeWidth={2.5} />
+              약속 만들기
+            </>
+          )}
         </button>
       </div>
 
@@ -86,18 +100,22 @@ export default function Home() {
                 >
                   <p className="font-medium text-gray-700 text-sm">{apt.title}</p>
                   {apt.confirmed_date ? (
-                    <p className="text-xs text-pink-400 mt-0.5">
-                      ✅ {apt.confirmed_date} 확정!
-                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs text-pink-400 mt-0.5">
+                      <CheckCircle2 size={11} />
+                      {apt.confirmed_date} 확정!
+                    </span>
                   ) : (
-                    <p className="text-xs text-gray-400 mt-0.5">날짜 조율 중...</p>
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-400 mt-0.5">
+                      <Clock size={11} />
+                      날짜 조율 중...
+                    </span>
                   )}
                 </button>
                 <button
                   onClick={() => removeFromList(apt.id)}
-                  className="text-gray-300 hover:text-gray-500 ml-3 text-lg"
+                  className="text-gray-300 hover:text-gray-500 ml-3 p-1"
                 >
-                  ×
+                  <X size={16} />
                 </button>
               </div>
             ))}
@@ -106,9 +124,10 @@ export default function Home() {
       )}
 
       {myAppointments.length === 0 && (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
+          <CalendarDays size={40} className="text-pink-200" strokeWidth={1.5} />
           <p className="text-gray-300 text-sm text-center">
-            아직 약속이 없어요<br />새 약속을 만들어보세요 🌷
+            아직 약속이 없어요<br />새 약속을 만들어보세요
           </p>
         </div>
       )}

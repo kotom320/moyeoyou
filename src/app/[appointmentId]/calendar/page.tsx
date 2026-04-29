@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Appointment, Profile, Availability } from '@/lib/types'
+import { ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, X, PartyPopper } from 'lucide-react'
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -144,9 +145,10 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
       <div className="px-5 pt-10 pb-4">
         <button
           onClick={() => router.push(`/${appointmentId}`)}
-          className="text-gray-400 text-sm mb-4 block"
+          className="flex items-center gap-1.5 text-gray-400 text-sm mb-4 hover:text-gray-600 transition-colors"
         >
-          ← 프로필 선택
+          <ArrowLeft size={16} />
+          프로필 선택
         </button>
 
         <div className="flex items-center justify-between mb-1">
@@ -165,12 +167,15 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
 
         {appointment?.confirmed_date && (
           <div className="bg-pink-50 border border-pink-200 rounded-xl px-4 py-2 mb-4 flex items-center justify-between">
-            <p className="text-pink-500 text-sm font-medium">🎉 {appointment.confirmed_date} 확정!</p>
+            <span className="flex items-center gap-1.5 text-pink-500 text-sm font-medium">
+              <PartyPopper size={15} />
+              {appointment.confirmed_date} 확정!
+            </span>
             <button
               onClick={unconfirmDate}
-              className="text-pink-300 hover:text-pink-500 text-lg leading-none ml-2"
+              className="text-pink-300 hover:text-pink-500 ml-2 p-0.5"
             >
-              ×
+              <X size={15} />
             </button>
           </div>
         )}
@@ -183,9 +188,9 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
               if (month === 0) { setYear(y => y - 1); setMonth(11) }
               else setMonth(m => m - 1)
             }}
-            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"
+            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            ‹
+            <ChevronLeft size={18} />
           </button>
           <span className="font-medium text-gray-700">
             {year}년 {month + 1}월
@@ -195,9 +200,9 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
               if (month === 11) { setYear(y => y + 1); setMonth(0) }
               else setMonth(m => m + 1)
             }}
-            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600"
+            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            ›
+            <ChevronRight size={18} />
           </button>
         </div>
 
@@ -274,9 +279,9 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
               </p>
               <button
                 onClick={() => setSelectedDate(null)}
-                className="text-gray-300 hover:text-gray-500 text-xl leading-none"
+                className="text-gray-300 hover:text-gray-500 p-1"
               >
-                ×
+                <X size={18} />
               </button>
             </div>
 
@@ -323,9 +328,10 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
                     <button
                       onClick={() => confirmDate(selectedDate)}
                       disabled={confirming}
-                      className="flex-1 bg-purple-400 text-white rounded-xl py-3 text-sm font-medium"
+                      className="flex-1 bg-purple-400 text-white rounded-xl py-3 text-sm font-medium flex items-center justify-center gap-1.5"
                     >
-                      {confirming ? '확정 중...' : '🎉 이 날로 확정!'}
+                      <PartyPopper size={15} />
+                      {confirming ? '확정 중...' : '이 날로 확정!'}
                     </button>
                   )}
                 </div>
