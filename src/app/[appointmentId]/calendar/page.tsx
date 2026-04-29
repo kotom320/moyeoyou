@@ -254,7 +254,10 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
     const count = profileIds.size
     const ratio = allProfiles.length > 0 ? count / allProfiles.length : 0
     const isMyDate = currentProfile ? profileIds.has(currentProfile.id) : false
-    return { count, ratio, isMyDate }
+    const profiles = [...profileIds]
+      .map((id) => allProfiles.find((p) => p.id === id))
+      .filter(Boolean) as Profile[]
+    return { count, ratio, isMyDate, profiles }
   }
 
   function getHourInfo(dateStr: string, hour: number) {
@@ -277,7 +280,8 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
   const firstDay = getFirstDay(year, month)
 
   const sheetBestHours = selectedDate ? getBestHours(selectedDate) : []
-  const isSheetConfirmed = selectedDate ? appointment?.confirmed_date === selectedDate : false
+  const isAnyConfirmed = !!appointment?.confirmed_date
+  const isThisDateConfirmed = selectedDate ? appointment?.confirmed_date === selectedDate : false
   const myHourCount =
     selectedDate && currentProfile
       ? availability.filter((a) => a.profile_id === currentProfile.id && a.date === selectedDate).length
@@ -360,7 +364,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1
             const dateStr = formatDate(year, month, day)
-            const { count, ratio, isMyDate } = getDateInfo(dateStr)
+            const { ratio, isMyDate, profiles } = getDateInfo(dateStr)
             const isSelected = selectedDate === dateStr
 
             const bgColor =
@@ -384,8 +388,19 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
                 `}
               >
                 <span className="text-sm leading-none">{day}</span>
-                {count > 0 && (
-                  <span className="text-[9px] leading-none mt-0.5 opacity-70">{count}명</span>
+                {profiles.length > 0 && (
+                  <div className="flex justify-center mt-1">
+                    {profiles.slice(0, 4).map((p, idx) => (
+                      <div
+                        key={p.id}
+                        className="w-2 h-2 rounded-full ring-1 ring-white/60"
+                        style={{
+                          backgroundColor: p.color,
+                          marginLeft: idx > 0 ? '-3px' : '0',
+                        }}
+                      />
+                    ))}
+                  </div>
                 )}
               </button>
             )
@@ -425,7 +440,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
             <div>
               <p className="text-base font-bold text-gray-700">{formatDateKo(selectedDate)}</p>
-              {isSheetConfirmed && appointment?.confirmed_start_hour != null && (
+              {isThisDateConfirmed && appointment?.confirmed_start_hour != null && (
                 <p className="text-xs text-pink-500 mt-0.5 flex items-center gap-1">
                   <PartyPopper size={11} />
                   {formatHour(appointment.confirmed_start_hour!)}-{formatHour(appointment.confirmed_end_hour! + 1)} 확정!
@@ -441,7 +456,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           </div>
 
           {/* 하루 종일 button */}
-          {!isSheetConfirmed && (
+          {!isAnyConfirmed && (
             <div className="px-5 pb-3 shrink-0">
               <button
                 onClick={() => toggleAllDay(selectedDate)}
@@ -460,7 +475,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           <div className="flex-1 overflow-y-auto px-5 pb-3">
             <div className="space-y-1">
               {HOURS.map((hour) => {
-                const { count, ratio, isMyHour, profiles } = getHourInfo(selectedDate, hour)
+                const { ratio, isMyHour, profiles } = getHourInfo(selectedDate, hour)
                 const isBest = sheetBestHours.includes(hour)
 
                 const bgColor =
@@ -470,39 +485,44 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
                   : 'bg-pink-400'
 
                 const labelColor = ratio >= 0.67 ? 'text-white' : 'text-gray-500'
-                const countColor = ratio >= 0.67 ? 'text-white opacity-70' : 'text-gray-400'
 
                 return (
                   <button
                     key={hour}
-                    onClick={() => !isSheetConfirmed && toggleHour(selectedDate, hour)}
-                    disabled={isSheetConfirmed}
+                    onClick={() => !isAnyConfirmed && toggleHour(selectedDate, hour)}
+                    disabled={isAnyConfirmed}
                     className={`
                       w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                      ${!isSheetConfirmed ? 'active:scale-[0.98]' : ''}
+                      ${!isAnyConfirmed ? 'active:scale-[0.98]' : ''}
                       ${bgColor}
                       ${isBest ? 'ring-2 ring-purple-300 ring-offset-1' : ''}
                     `}
                   >
-                    <span className={`text-sm w-12 text-left font-medium ${labelColor}`}>
+                    <span className={`text-sm w-12 text-left font-medium shrink-0 ${labelColor}`}>
                       {formatHour(hour)}
                     </span>
-                    <div className="flex-1 flex items-center gap-2 min-w-0">
-                      {count > 0 && (
-                        <span className={`text-xs ${countColor}`}>{count}명</span>
-                      )}
+                    <div className="flex-1 flex items-center gap-1 min-w-0">
+                      {profiles.map((p) => (
+                        <div
+                          key={p.id}
+                          className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 ring-1 ring-white/40"
+                          style={{ backgroundColor: p.color }}
+                        >
+                          {p.name[0]}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {isBest && (
-                        <span className="text-xs text-purple-500 font-medium ml-auto shrink-0">
-                          모두 가능 ✓
-                        </span>
+                        <span className="text-xs text-purple-500 font-medium">모두 ✓</span>
+                      )}
+                      {isMyHour && (
+                        <CheckCircle2
+                          size={16}
+                          className={ratio >= 0.67 ? 'text-white' : 'text-pink-400'}
+                        />
                       )}
                     </div>
-                    {isMyHour && (
-                      <CheckCircle2
-                        size={16}
-                        className={ratio >= 0.67 ? 'text-white' : 'text-pink-400'}
-                      />
-                    )}
                   </button>
                 )
               })}
@@ -510,7 +530,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           </div>
 
           {/* Confirm button */}
-          {sheetBestHours.length > 0 && !isSheetConfirmed && (
+          {sheetBestHours.length > 0 && !isAnyConfirmed && (
             <div className="px-5 py-4 shrink-0 border-t border-gray-100">
               <button
                 onClick={() => confirmDate(selectedDate)}
