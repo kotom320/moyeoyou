@@ -82,13 +82,15 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
     )
 
     if (existing) {
+      setAvailability((prev) => prev.filter((a) => a.id !== existing.id))
       await supabase.from('availability').delete().eq('id', existing.id)
     } else {
-      await supabase.from('availability').insert({
+      const { data } = await supabase.from('availability').insert({
         appointment_id: appointmentId,
         profile_id: currentProfile.id,
         date: dateStr,
-      })
+      }).select().single()
+      if (data) setAvailability((prev) => [...prev, data])
     }
   }
 
