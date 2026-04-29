@@ -185,6 +185,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => {
+              setSelectedDate(null)
               if (month === 0) { setYear(y => y - 1); setMonth(11) }
               else setMonth(m => m - 1)
             }}
@@ -197,6 +198,7 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
           </span>
           <button
             onClick={() => {
+              setSelectedDate(null)
               if (month === 11) { setYear(y => y + 1); setMonth(0) }
               else setMonth(m => m + 1)
             }}
