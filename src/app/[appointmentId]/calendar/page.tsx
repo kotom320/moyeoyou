@@ -63,7 +63,11 @@ export default function CalendarPage({ params }: { params: Promise<{ appointment
         { event: '*', schema: 'public', table: 'availability', filter: `appointment_id=eq.${appointmentId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setAvailability((prev) => [...prev, payload.new as Availability])
+            setAvailability((prev) =>
+              prev.some((a) => a.id === payload.new.id)
+                ? prev
+                : [...prev, payload.new as Availability]
+            )
           } else if (payload.eventType === 'DELETE') {
             setAvailability((prev) => prev.filter((a) => a.id !== payload.old.id))
           }
