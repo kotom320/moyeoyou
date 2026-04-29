@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import type { Appointment, Profile } from '@/lib/types'
 import { AVATAR_COLORS } from '@/lib/types'
 import { ArrowLeft, CheckCircle2, UserPlus, Link2, Loader2, X } from 'lucide-react'
+import Toast from '@/components/Toast'
 
 export default function AppointmentPage({ params }: { params: Promise<{ appointmentId: string }> }) {
   const { appointmentId } = use(params)
@@ -17,6 +18,7 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
   const [newName, setNewName] = useState('')
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS[0])
   const [creating, setCreating] = useState(false)
+  const [toast, setToast] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -63,7 +65,7 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
 
   function shareLink() {
     navigator.clipboard.writeText(window.location.href)
-    alert('링크 복사됐어요! 친구들에게 공유하세요 🎉')
+    setToast('링크 복사됐어요! 친구들에게 공유하세요')
   }
 
   if (loading) {
@@ -84,6 +86,7 @@ export default function AppointmentPage({ params }: { params: Promise<{ appointm
 
   return (
     <main className="flex flex-col min-h-screen px-5 pt-12 pb-8 max-w-md mx-auto w-full">
+      {toast && <Toast message={toast} onClose={() => setToast('')} />}
       <button
         onClick={() => router.push('/')}
         className="flex items-center gap-1.5 text-gray-400 text-sm mb-8 self-start hover:text-gray-600 transition-colors"
