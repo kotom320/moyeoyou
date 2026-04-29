@@ -48,7 +48,7 @@ export default function Home() {
   return (
     <main className="flex flex-col min-h-screen px-5 pt-12 pb-8 max-w-md mx-auto w-full">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-pink-400 mb-1">모여유~</h1>
+        <h1 className="text-4xl font-bold text-pink-400 mb-1">모여유</h1>
         <p className="text-sm text-gray-400">친구들과 일정을 맞춰봐요 🌸</p>
       </div>
 
